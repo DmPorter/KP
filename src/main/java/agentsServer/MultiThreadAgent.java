@@ -11,21 +11,20 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public class MultiThreadAgent extends Thread{
     static ExecutorService executeIt = Executors.newFixedThreadPool(5);
-    static LinkedBlockingQueue<Task> queue = new LinkedBlockingQueue<>();
-    static LinkedBlockingQueue<Task> queueOut = new LinkedBlockingQueue<>();
+    static LinkedBlockingQueue<Task> inLinkedQueue = new LinkedBlockingQueue<>();
+    static LinkedBlockingQueue<Task> outLinkedQueue = new LinkedBlockingQueue<>();
 
     public MultiThreadAgent(LinkedBlockingQueue<Task> in, LinkedBlockingQueue<Task> out){
-        queue = in;
-        queueOut = out;
+        inLinkedQueue = in;
+        outLinkedQueue = out;
     }
 
     @Override
     public void run() {
         try (ServerSocket server = new ServerSocket(8010)) {
             while(!server.isClosed()){
-                System.out.println(server.getLocalSocketAddress());
                 Socket agent = server.accept();
-                executeIt.execute(new MonoThreadAgent(agent, queue, queueOut));
+                executeIt.execute(new MonoThreadAgent(agent, inLinkedQueue, outLinkedQueue));
             }
         } catch (IOException e) {
             e.printStackTrace();

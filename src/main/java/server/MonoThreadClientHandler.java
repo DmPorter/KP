@@ -11,15 +11,13 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class MonoThreadClientHandler implements Runnable {
 
         private static Socket clientDialog;
-        private LinkedBlockingQueue<Task> queue;
-        private LinkedBlockingQueue<Task> out;
-        private HashMap<String, QueueOutForThread> outWait;
+        private final LinkedBlockingQueue<Task> inLinkedQueue;
+        private final HashMap<String, QueueOutForThread> waitMap;
 
-        public MonoThreadClientHandler(Socket client, LinkedBlockingQueue<Task> q,LinkedBlockingQueue<Task> out,HashMap<String, QueueOutForThread> outWait) {
+        public MonoThreadClientHandler(Socket client, LinkedBlockingQueue<Task> q,HashMap<String, QueueOutForThread> waitMap) {
             MonoThreadClientHandler.clientDialog = client;
-            this.queue = q;
-            this.out = out;
-            this.outWait = outWait;
+            this.inLinkedQueue = q;
+            this.waitMap = waitMap;
 
         }
 
@@ -27,43 +25,68 @@ public class MonoThreadClientHandler implements Runnable {
         public void run() {
 
             try {
-                BufferedWriter out = new BufferedWriter(new OutputStreamWriter(clientDialog.getOutputStream()));
-                BufferedReader in = new BufferedReader(new InputStreamReader(clientDialog.getInputStream()));
+                BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(clientDialog.getOutputStream()));
+                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(clientDialog.getInputStream()));
+                System.out.println("Client accepted " + clientDialog.getInetAddress());
                 while (!clientDialog.isClosed()) {
-                    String entry = in.readLine();
-                    System.out.println(clientDialog.getLocalSocketAddress());
+                    String entry = bufferedReader.readLine();
+
                     int[] numArr = Arrays.stream(entry.split(" ")).mapToInt(Integer::parseInt).toArray();
                     Task t = new Task(numArr[1], numArr[2], numArr[0]);
+
                     long start = System.nanoTime();
-                    queue.put(t);
+
+                    inLinkedQueue.put(t);
+
                     QueueOutForThread task = new QueueOutForThread();
-                    outWait.put(t.getUid(), task);
+                    waitMap.put(t.getUid(), task);
                     task.waitQueue();
-                    outWait.remove(t.getUid());
-                    String operation = "";
-                    switch (t.getOperation()){
-                        case 0 -> operation = " + ";
-                        case 1 -> operation = " - ";
-                        case 2 -> operation = " * ";
-                        case 3 -> operation = " / ";
-                    }
+
+                    waitMap.remove(t.getUid());
+
                     long finish = System.nanoTime();
                     long elapsed = finish - start;
-                    if(t.isFlagRes())
-                        out.write(t.getA() + operation + t.getB() + " = " + task.getResult() + " - OK Time: " + (elapsed/ 1000000000) + " s");
+
+                    if(t.isValidRes())
+                        bufferedWriter.write(t.getA() + getOperation(t.getOperation()) +
+                                t.getB() + " = " + task.getResult() + " - OK Time: "
+                                + (elapsed/ 1000000000) + " s");
                     else
-                        out.write(t.getA() + operation + t.getB() + " = None - ERROR Time: " + (elapsed/ 1000000000) + " s");
-                    out.newLine();
-                    out.flush();
+                        bufferedWriter.write(t.getA() + getOperation(t.getOperation()) +
+                                t.getB() + " = None - ERROR Time: "
+                                + (elapsed/ 1000000000) + " s");
+                    bufferedWriter.newLine();
+                    bufferedWriter.flush();
 
                 }
-                in.close();
-                out.close();
+
+                bufferedReader.close();
+                bufferedWriter.close();
                 clientDialog.close();
             } catch (IOException | InterruptedException e) {
                 e.printStackTrace();
             }
 
+    }
+
+    private static String getOperation(int operation){
+        switch (operation){
+            case 0 -> {
+                return " + ";
+            }
+            case 1 -> {
+                return " - ";
+            }
+            case 2 -> {
+                return " * ";
+            }
+            case 3 -> {
+                return " / ";
+            }
+            default -> {
+                return "";
+            }
+        }
     }
     }
 

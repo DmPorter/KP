@@ -3,12 +3,16 @@ package forTask;
 import java.util.Random;
 
 public class Task {
-    private int a;
-    private int b;
-    private String uid = Long.toUnsignedString(new Random().nextLong(), 36).substring(0,6);
+    private final int a;
+    private final int b;
+    private final int operation;
+    private final String uid = Long.toUnsignedString(new Random().nextLong(), 36).substring(0,6);
     private int res = 0;
-    private int operation;
-    private boolean flagRes = true;
+    private boolean validRes = true;
+
+    public Task(int a, int b, int operation){
+        this.a = a; this.b = b; this.operation = operation;
+    }
 
     public int getA() {
         return a;
@@ -18,12 +22,12 @@ public class Task {
         return b;
     }
 
-    public boolean isFlagRes() {
-        return flagRes;
+    public boolean isValidRes() {
+        return validRes;
     }
 
-    public void setFlagRes(boolean flagRes) {
-        this.flagRes = flagRes;
+    public void setValidRes(boolean validRes) {
+        this.validRes = validRes;
     }
 
     public void setRes(int res) {
@@ -40,9 +44,5 @@ public class Task {
 
     public int getOperation() {
         return operation;
-    }
-
-    public Task(int a, int b, int operation){
-        this.a = a; this.b = b; this.operation = operation;
     }
 }

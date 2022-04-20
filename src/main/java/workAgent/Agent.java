@@ -16,7 +16,6 @@ public class Agent {
         ) {
             while(socket.isBound()) {
                 String response = reader.readLine();
-                System.out.println(response);
                 StringBuilder str = new StringBuilder();
                 str.append(response, 0, 6).append(" ");
                 response = response.substring(7);
