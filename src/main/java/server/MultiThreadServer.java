@@ -16,7 +16,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class MultiThreadServer {
-    static ExecutorService executeIt = Executors.newFixedThreadPool(2);
+    static ExecutorService executeIt = Executors.newFixedThreadPool(10);
     static LinkedBlockingQueue<Task> inLinkedQueue = new LinkedBlockingQueue<>();
     static LinkedBlockingQueue<Task> outLinkedQueue = new LinkedBlockingQueue<>();
     static HashMap<String, QueueOutForThread> waitMap = new HashMap<>();

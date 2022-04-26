@@ -63,7 +63,16 @@ public class MonoThreadClientHandler implements Runnable {
                 bufferedReader.close();
                 bufferedWriter.close();
                 clientDialog.close();
-            } catch (IOException | InterruptedException e) {
+            } catch (IOException | InterruptedException | NumberFormatException e) {
+                try {
+                    BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(clientDialog.getOutputStream()));
+                    bufferedWriter.write("Error");
+                    bufferedWriter.newLine();
+                    bufferedWriter.flush();
+                    clientDialog.close();
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
                 e.printStackTrace();
             }
 
